@@ -4,7 +4,7 @@ import java.awt.*;
  * Created by user on 2016/8/3.
  */
 public class Missile {
-    public static final int XSPEED = 10;
+    private static final int XSPEED = 10;
     public static final int YSPEED = 10;
     public static final int WIDTH = 10;
     public static final int HEIGHT = 10;
@@ -12,7 +12,7 @@ public class Missile {
     int x, y;
     Tank.Direction dir;
 
-    public TankClient tc;
+    private TankClient tc;
     private boolean live = true;
 
     public Missile(int x, int y, Tank.Direction dir) {
@@ -27,6 +27,11 @@ public class Missile {
     }
 
     public void draw(Graphics g) {
+        if(!live) {
+            tc.missiles.remove(this);
+            return;
+        }
+
         Color c = g.getColor();
         g.setColor(Color.black);
         g.fillOval(x, y, WIDTH, HEIGHT);
@@ -69,12 +74,27 @@ public class Missile {
 
         if(x < 0 || y < 0 || x > TankClient.GAME_WIDTH || y > TankClient.GAME_HEIGHT) {
             live = false;
-            tc.missiles.remove(this);
         }
     }
 
     public boolean isLive() {
         return live;
     }
+
+    public Rectangle getRect() {
+        return new Rectangle(x,y,WIDTH,HEIGHT);
+    }
+
+    public boolean hitTank(Tank t) {
+        if(this.getRect().intersects(t.getRect()) && t.isLive()) {
+            t.setLive(false);
+            this.live = false;
+            Explode e = new Explode(x, y, tc);
+            tc.explodes.add(e);
+            return true;
+        }
+        return false;
+    }
 }
+
 
